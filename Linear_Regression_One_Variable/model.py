@@ -3,6 +3,7 @@ import numpy as np
 import math
 import csv
 import time
+from sklearn import cross_validation
 
 def csvContent(filename):
     '''Get content of the csv file
@@ -82,8 +83,11 @@ startTime = time.time()
 csvList = csvContent('Linear_Regression_One_Variable/Dataset/simple.csv')
 
 #Get column data
-originalX = HeaderData(csvList, 'x')
-originalY = HeaderData(csvList, 'y')
+featuresX = HeaderData(csvList, 'x')
+featuresY = HeaderData(csvList, 'y')
+
+#Split data into training and test data (30% training data and 70% test data)
+trainX, testX, trainY, testY = cross_validation.train_test_split(featuresX,featuresY, test_size=0.7, random_state=42)
 
 #A placeholder is simply a variable that we will assign data to at a later date. 
 #It allows us to create our operations and build our computation graph, without needing the data.
