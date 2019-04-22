@@ -86,7 +86,7 @@ csvList = csvContent('Linear_Regression_One_Variable/Dataset/simple.csv')
 featuresX = HeaderData(csvList, 'x')
 featuresY = HeaderData(csvList, 'y')
 
-#Split train data into train and test data
+#Split data into training and test data (30% training data and 70% test data)
 trainX, testX, trainY, testY = cross_validation.train_test_split(featuresX,featuresY, test_size=0.7, random_state=42)
 
 #A placeholder is simply a variable that we will assign data to at a later date. 
