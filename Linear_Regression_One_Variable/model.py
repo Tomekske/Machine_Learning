@@ -159,7 +159,7 @@ optimizer = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
 init = tf.initialize_all_variables()
 
 #Save model
-saveModel = "Model/"
+saveModel = "Linear_Regression_One_Variable/Model/"
 trainSaver = tf.train.Saver()
 
 with tf.Session() as sesh:
