@@ -150,12 +150,17 @@ pred = Hypothesis(W,B,X)
 #Calculate the cost function with the prediction of the random values
 cost = CostFunction(pred, Y)
 
-#minimise cost function parameters
+#Minimise cost function parameters
 learningRate = 0.000000001
-epochs = 2000
+epochs = 60
 
+#Optimise cost function
 optimizer = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
 init = tf.initialize_all_variables()
+
+#Save model
+saveModel = "Model/"
+trainSaver = tf.train.Saver()
 
 with tf.Session() as sesh:
     sesh.run(init)
@@ -169,13 +174,21 @@ with tf.Session() as sesh:
         c =  sesh.run(cost, feed_dict = {X: trainX, Y: trainY})
         w = sesh.run(W)
         b = sesh.run(B)
+
         print(f'epoch: {epoch} c: {c:.6f} w: {w} b: {b}')
 
     #Get weight and bias
     weight = sesh.run(W)
     bias = sesh.run(B)
 
-    print(f'Weight = {weight}\nBias = {bias}')
+    #Assign variables
+    W.assign(weight).op.run()
+    B.assign(bias).op.run()
+
+    #Save the trained model
+    trainSaver.save(sess = sesh, save_path= saveModel)
+
+    print(f'Result: Weight = {weight}\nBias = {bias}')
 
 #print program execution time
 ProgramExecutionTime(startTime)
