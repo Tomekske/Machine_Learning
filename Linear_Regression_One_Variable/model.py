@@ -46,7 +46,7 @@ def ProgramExecutionTime(start):
 
     currentTime = time.time() - start
 
-    if currentTime < 60:
+    if currentTime < 59:
         print(f'Execution time: {currentTime:0.2f} sec ')
     else:
         currentTime = currentTime / 60
@@ -91,9 +91,9 @@ def SplitData(featuresX, featuresY, testbatch):
 
     trainX, testX, trainY, testY = cross_validation.train_test_split(featuresX,featuresY, test_size=testbatch, random_state=42)
 
-    #Create a multidemensional array containing training data
+    # Creates a multidemensional array containing training data
     training = np.array([trainX, trainY])
-    #Create a multidemensional array containing test data
+    # Creates a multidemensional array containing test data
     test =  np.array([testX, testY])
 
     return TransposeData(training, test)
@@ -108,87 +108,90 @@ def TransposeData(trainingSet, testSet):
         (numpy array): Returns XY-training and XY-test sets
     '''
 
-    #Split traing data into XY-arrays
+    # Split traing data into XY-arrays
     trainX,trainY = trainingSet
-    #Split test data into XY-arrays
+    # Split test data into XY-arrays
     testX,testY = testSet
 
-    #Create multi demonsional array of the training data
+    # Create multi demonsional array of the training data
     trainX = np.array([trainX])
     trainY = np.array([trainY])
 
-    #Create multi demonsional array of the test data
+    # Create multi demonsional array of the test data
     testX = np.array([testX])
     testY = np.array([testY])
 
     return np.transpose(trainX), np.transpose(testX), np.transpose(trainY), np.transpose(testY)
 
-#Program start time
+# Program start time
 startTime = time.time()
 
-#Retrieve all csv column data
+# Retrieve all csv column data
 csvList = csvContent('Linear_Regression_One_Variable/Dataset/simple.csv')
 
-#Get column data
+# Get column data
 featuresX = HeaderData(csvList, 'x')
 featuresY = HeaderData(csvList, 'y')
 
-#Split data into training and test data (30% training data and 70% test data)
+# Split data into training and test data (30% training data and 70% test data)
 trainX, testX, trainY, testY = SplitData(featuresX, featuresY, 0.3)
 
-#A placeholder is simply a variable that we will assign data to at a later date. 
-#It allows us to create our operations and build our computation graph, without needing the data.
+# A placeholder is simply a variable that we will assign data to at a later date. 
+# It allows us to create our operations and build our computation graph, without needing the data.
 X = tf.placeholder(tf.float32, [None, 1])
 Y = tf.placeholder(tf.float32,  [None, 1])
 
-#Create and initialize variables with zeros
+# Create and initialize variables with zeros
 W = tf.Variable(tf.zeros([1,1]), name = "weights")
 B = tf.Variable(tf.zeros([1]), name = "bias")
 
-#Calculate the hypothesis with random values
+# Calculate the hypothesis with random values
 pred = Hypothesis(W,B,X)
-#Calculate the cost function with the prediction of the random values
+# Calculate the cost function with the prediction of the random values
 cost = CostFunction(pred, Y)
 
-#Minimise cost function parameters
+# Minimise cost function parameters
 learningRate = 0.000000001
 epochs = 60
 
-#Optimise cost function
+# Optimise cost function
 optimizer = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
-init = tf.initialize_all_variables()
 
-#Save model
+# An Op that initializes global variables in the graph
+init = tf.global_variables_initializer()
+
+# Model save location
 saveModel = "Linear_Regression_One_Variable/Model/"
+
+# Saves variables
 trainSaver = tf.train.Saver()
 
 with tf.Session() as sesh:
     sesh.run(init)
 
-    # loop-over all epochs
     for epoch in range(epochs):
-        #Minimise cost function
+        #M inimise cost function
         sesh.run(optimizer, feed_dict= { X: trainX, Y: trainY})
 
-        #Calculate cost, weight and bias
+        # Calculate cost, weight and bias
         c =  sesh.run(cost, feed_dict = {X: trainX, Y: trainY})
         w = sesh.run(W)
         b = sesh.run(B)
 
         print(f'epoch: {epoch} c: {c:.6f} w: {w} b: {b}')
 
-    #Get weight and bias
+    # Get weight and bias
     weight = sesh.run(W)
     bias = sesh.run(B)
 
-    #Assign variables
+    # Assign variables
     W.assign(weight).op.run()
     B.assign(bias).op.run()
 
-    #Save the trained model
+    # Save the trained model
     trainSaver.save(sess = sesh, save_path= saveModel)
 
     print(f'Result: Weight = {weight}\nBias = {bias}')
 
-#print program execution time
+# print program execution time
 ProgramExecutionTime(startTime)
