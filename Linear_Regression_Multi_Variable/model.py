@@ -188,13 +188,19 @@ cost = CostFunction(pred, Y)
 
 # Minimise cost function parameters
 learningRate = 0.0000000001
-epochs = 1000
+epochs = 10000
 
 # Optimise cost function
 optimizer = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
 
 # An Op that initializes global variables in the graph
 init = tf.global_variables_initializer()
+
+# Model save location
+saveModel = "Linear_Regression_Multi_Variable/Model/"
+
+# Saves variables
+trainSaver = tf.train.Saver()
 
 with tf.Session() as sesh:
     sesh.run(init)
@@ -213,6 +219,13 @@ with tf.Session() as sesh:
     # Get weight and bias
     weight = sesh.run(W)
     bias = sesh.run(B)
+
+    # Assign variables
+    W.assign(weight).op.run()
+    B.assign(bias).op.run()
+
+    # Save the trained model
+    trainSaver.save(sess = sesh, save_path= saveModel)
 
     print(f'Weight = {weight}\nBias = {bias}')
 
