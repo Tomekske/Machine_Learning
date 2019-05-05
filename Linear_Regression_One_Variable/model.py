@@ -170,7 +170,7 @@ with tf.Session() as sesh:
     sesh.run(init)
 
     for epoch in range(epochs):
-        #M inimise cost function
+        # Minimise cost function
         sesh.run(optimizer, feed_dict= { X: trainX, Y: trainY})
 
         # Calculate cost, weight and bias
