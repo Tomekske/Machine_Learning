@@ -76,6 +76,8 @@ def TransposeData(*dataset):
 
     testList = []
     trainList = []
+    yTestList = []
+    yTrainList = []
 
     # Slice test data from the dataset
     testSetList = list(dataset)[::2]
@@ -83,15 +85,22 @@ def TransposeData(*dataset):
     trainSetList = list(dataset)[1:][::2]
 
     # Split data set accordingly 
-    for test,train in zip(testSetList,trainSetList):
+    for test,train in zip(testSetList[:-1],trainSetList[:-1]):
         testList.append(np.array(test))
         trainList.append(np.array(train))
+    
+    # Obtain only Y-values from the dataset
+    for test,train in zip(testSetList[-1:],trainSetList[-1:]):
+        yTestList.append(np.array(test))
+        yTrainList.append(np.array(train))
 
-    # Convert list to a numpy array
     testSet = np.asarray(testList)
     trainSet = np.asarray(trainList)
 
-    return testSet, trainSet
+    yTestSet = np.asarray(yTestList)
+    yTrainSet = np.asarray(yTrainList)
+
+    return np.transpose(testSet), np.transpose(trainSet), np.transpose(yTestSet), np.transpose(yTrainSet)
 
 def CalculateHouseAge(yearBuild):
     '''Calculate the house's age
@@ -110,6 +119,33 @@ def CalculateHouseAge(yearBuild):
         agesList.append(float(currentYear) - float(year))
 
     return np.asarray(agesList)
+
+def Hypothesis(W,B,X):
+    '''Calculates the hypothesis using the lineair regression formula 'X * W + B'
+    
+    Args:
+        W (numpy array): Weight of the equation (slope)
+        b (numpy array): Bias of the equation (offset)
+        X (numpy array): Original x-values
+
+    Return:
+        (Tensor): Y-value for fiven X-value
+    '''
+
+    return tf.matmul(X, W) + B    
+
+def CostFunction(hx, Y):
+    '''Calculates the cost function of the linear equation '1/n * sum((pred - y)^2)' 
+    
+    Args:
+        hx (numpy array): Predicted Y-values
+        Y (numpy array): Actual Y-values
+    Return:
+        (Tensor): Cost function value
+    '''
+
+    return  tf.reduce_mean(tf.square(hx - Y))
+
 
 # Program start time
 startTime = time.time()
@@ -134,7 +170,51 @@ dataset.append(featureAge)
 dataset.append(featurePrices)
 
 # Split the data in to training and test data
-testSet, trainSet = SplitData(dataset, 0.3)
+testSet, trainSet, yTestSet, yTrainSet = SplitData(dataset, 0.01)
+
+# A placeholder is simply a variable that we will assign data to at a later date. 
+# It allows us to create our operations and build our computation graph, without needing the data.
+X = tf.placeholder(tf.float32, [None, 3])
+Y = tf.placeholder(tf.float32,  [None, 1])
+
+# Create and initialize variables with zeros
+W = tf.Variable(tf.zeros([3,1]), name = "weights")
+B = tf.Variable(tf.zeros([1]), name = "bias")
+
+# Calculate the hypothesis with random values
+pred = Hypothesis(W,B,X)
+# Calculate the cost function with the prediction of the random values
+cost = CostFunction(pred, Y)
+
+# Minimise cost function parameters
+learningRate = 0.0000000001
+epochs = 1000
+
+# Optimise cost function
+optimizer = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
+
+# An Op that initializes global variables in the graph
+init = tf.global_variables_initializer()
+
+with tf.Session() as sesh:
+    sesh.run(init)
+
+    for epoch in range(epochs):
+        # Minimise cost function
+        sesh.run(optimizer, feed_dict= { X: trainSet, Y: yTrainSet})
+        
+        # Calculate cost, weight and bias
+        c =  sesh.run(cost, feed_dict = {X: trainSet, Y: yTrainSet})
+        w = sesh.run(W)
+        b = sesh.run(B)
+
+        print(f'epoch: {epoch} c: {c:.6f} w: {w} b: {b}')
+
+    # Get weight and bias
+    weight = sesh.run(W)
+    bias = sesh.run(B)
+
+    print(f'Weight = {weight}\nBias = {bias}')
 
 # print program execution time
 ProgramExecutionTime(startTime)
