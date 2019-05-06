@@ -187,8 +187,8 @@ pred = Hypothesis(W,B,X)
 cost = CostFunction(pred, Y)
 
 # Minimise cost function parameters
-learningRate = 0.0000000001
-epochs = 10000
+learningRate = 0.00000000001
+epochs = 100000
 
 # Optimise cost function
 optimizer = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
